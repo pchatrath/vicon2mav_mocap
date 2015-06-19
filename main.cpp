@@ -24,8 +24,6 @@
 
 #include <QCoreApplication>
 #include <iostream>
-//#include <time.h>
-//#include <sys/time.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <cstdlib>
@@ -36,10 +34,7 @@
 #include "vicon/client.h"
 
 #if (!VICON_STREAM_DEBUG && !TCP_CONNECT_DEBUG)
-//    #include "mavlink/mavlink.h" // for #define several variables
-//    #include "mavlink/mavlink_msg_att_pos_mocap.h"
-//    #include "mavlink/mavlink_types.h"
-    #include "/home/gcs/programming/mavlink_lib/c_library-master/common/mavlink.h"
+    #include "c_library-master/common/mavlink.h"
 #endif
 
 using namespace ViconDataStreamSDK::CPP;
