@@ -1,9 +1,12 @@
+/* functions.h
+ * author: Julian L. Nicklas, julian.nicklas (at) posteo (.) de
+ */
+
 #include <sys/time.h>   // for gettimeofteday();
 #include <time.h>       // for nanoslepp(...);
 #include <math.h>
 #include <cstdlib>
 
-//#include "mavlink/mavlink_types.h"
 #include "quaternions.h"
 
 //##################### constants ########################
@@ -13,17 +16,16 @@
 #define MY_NET_ADDRESS INADDR_ANY
 #define TCP2SERIAL_ADRESS "127.0.0.1"
 #define TCP2SERIAL_PORT 5763
-#define BUFFER_LENGTH 44 // the size of a Vicon Position Estimate Msg in bytes
 #define FREQUENCY 30 // maximum frequency of the main loop in Hz
+                // if the code is slower this frequency will not be archieved
 
 #define PI 3.14159265
-#define ROOM_ALIGNMENT 0 // Angle between North- and x-axis of the Vicon coordinate system (positions send via MavLink should be in NED)
+//#define ROOM_ALIGNMENT 0 // Angle between North- and x-axis of the Vicon coordinate system (positions send via MavLink should be in NED)
         // Angle is measured in radians positive around the z-up-Axis from Vicon x-axis to North-axis
+#define ROOM_ALIGNMENT 2.474 //room alignment of the Vicon Enviroment at the NPS
 
 
 //################# function declarations ###################
-
-//void pack_vicon2mav138Buffer(unsigned char* Buffer, mavlink_message_t msg, unsigned char seq_no);
 
 void coordinateTrans_ViconToNED(float *viconPosPointer, float *rotation1_quat, float *rotation2_quat);
 
@@ -32,34 +34,8 @@ unsigned long long int getMSecondoftheday();
 unsigned long long int getMicroSecondoftheday();
 
 
-//##################### functions ##############################
-//void pack_vicon2mav138Buffer(unsigned char* Buffer, mavlink_message_t msg, unsigned char seq_no)
-//{
-//    // -- header -- length: 6 bytes
-//    *(Buffer     )  = 0xFE;                       // message start sign; value = 0xFE
-//    *(Buffer + 1 )  = (unsigned char)msg.len;     // length of payload; in this case value = 0x24 = 36
-//    *(Buffer + 2 )  = seq_no;                     // sequence number
-//    *(Buffer + 3 )  = (unsigned char)msg.sysid;   // System ID of the system sending this message
-//    *(Buffer + 4 )  = (unsigned char)msg.compid;  // Component ID of the component sending this message
-//    *(Buffer + 5 )  = (unsigned char)msg.msgid;   // message ID; in this case value = 0x8A = 138
-
-//    // -- payload -- length: 36 bytes
-//    // payload is saved in 8-byte-packets in msg.payload as an uint64_t array
-//    for(int i = 0; i < 36; i++) {
-//            *(Buffer + i + 6) = *((unsigned char*)&msg.payload64[0] + i);
-//    }
-//    // sidenotes:
-//    // for this message 4 1/2 packets are used
-//    // in the last 1/2 packet (4 bytes) the first 2 bytes are the checksum, the second 2 bytes trash
-//    // -> checksum is saved 2 times, in .payload and in .checksum
-
-//    // -- checksum -- length: 2 bytes
-//    *(Buffer + 42) = *((unsigned char*)&msg.checksum);
-//    *(Buffer + 43) = *((unsigned char*)&msg.checksum + 1);
-//}
-
 /**
- * Converts Position and Attitude Information the Vicon Coordinate System to the NED Coordinate System
+ * Converts Position and Attitude Information of the Vicon Coordinate System to the NED Coordinate System
  *
  * *viconPosPointer Vicon Position and Attutide Data: (x, y, z, x_quat, y_quat, z_quat, w_quat)
  * *rotation1_quat first rotation: (w_quat, x_quat, y_quat, z_quat)

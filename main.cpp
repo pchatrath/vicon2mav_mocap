@@ -1,13 +1,6 @@
-///////////////////////////////////////////////////////////////////////////////
-//
-// Copyright (C) OMG Plc 2009.
-// All rights reserved.  This software is protected by copyright
-// law and international treaties.  No part of this software / document
-// may be reproduced or distributed in any form or by any means,
-// whether transiently or incidentally to some other use of this software,
-// without the written permission of the copyright owner.
-//
-///////////////////////////////////////////////////////////////////////////////
+/* main.cpp of vicon2mav_mocap
+ * author: Julian L. Nicklas, julian.nicklas (at) posteo (.) de
+ */
 
 // only 1 (!) Debug Mode should be enabled, otherwise vicon2mav_mocap will not do anything
 #define VICON_STREAM_DEBUG 0
@@ -34,7 +27,7 @@
 #include "vicon/client.h"
 
 #if (!VICON_STREAM_DEBUG && !TCP_CONNECT_DEBUG)
-    #include "c_library-master/common/mavlink.h"
+    #include "/home/gcs/programming/mavlink_lib/c_library-master/common/mavlink.h"
 #endif
 
 using namespace ViconDataStreamSDK::CPP;
@@ -115,7 +108,6 @@ int main( )
   /*  configure and enable Connection to ViconDataStream  */
   /********************************************************/
 #if (!TCP_CONNECT_DEBUG && !MAVLINK_DEBUG)
-  // Program options
   bool TransmitMulticast = false;
 
   // Make a new Vicon-Client
@@ -159,6 +151,7 @@ int main( )
   ViconClient.SetAxisMapping( Direction::Forward,
                            Direction::Left,
                            Direction::Up ); // Z-up
+
   // Discover the version number
 //  Output_GetVersion _Output_GetVersion = ViconClient.GetVersion();
 //  std::cout << "Version: " << _Output_GetVersion.Major << "."
@@ -280,9 +273,6 @@ int main( )
                 ++m;
          }
 
-        // std::cout << "  Subject #" << SubjectIndex << std::endl;
-        // std::string SubjectName = ViconClient.GetSubjectName( SubjectIndex ).SubjectName; // Get the subject name
-
          // Count the number of segments
          unsigned int SegmentCount = ViconClient.GetSegmentCount( SubjectName ).SegmentCount;
          std::cout << "    Segments (" << SegmentCount << "):" << std::endl;
@@ -291,7 +281,6 @@ int main( )
                 std::cout << "      Segment #" << SegmentIndex << std::endl;
                 // Get the segment name
                 std::string SegmentName = ViconClient.GetSegmentName( SubjectName, SegmentIndex ).SegmentName;
-//                  std::cout << "          Name: " << SegmentName << std::endl;
 
                 // Get the global segment translation
                 Output_GetSegmentGlobalTranslation _Output_GetSegmentGlobalTranslation =
@@ -337,7 +326,7 @@ int main( )
                 // (x, y, z, x_quat, y_quat, z_quat, w_quat)
     #endif // MAVLINK_DEBUG
 
-                /* create MavLink Data */
+                /* ################# create MavLink Data ############### */
     #if (!VICON_STREAM_DEBUG && !TCP_CONNECT_DEBUG)
                 // Vicon Data is in milli meters, PX4 calculates in NED and meters
                 // and change the order of the variables from Vicon -> att_pos_mocap
@@ -361,13 +350,8 @@ int main( )
                 mavlink_msg_att_pos_mocap_pack(1, 200, &msg, getMicroSecondoftheday(), attitude_quat,
                              data_mavlinkMsgNo138[4], data_mavlinkMsgNo138[5], data_mavlinkMsgNo138[6]);
 
-//                mavlink_msg_att_pos_mocap_pack(1, 200, &msg, 0, attitude_quat,
-//                             data_mavlinkMsgNo138[4], data_mavlinkMsgNo138[5], data_mavlinkMsgNo138[6]);
-              // defined in mavlink_msg_att_pos_mocap.h
-
-               // unsigned char Buffer[BUFFER_LENGTH];
                 unsigned char Buffer[MAVLINK_MAX_PACKET_LEN];
-               // pack_vicon2mav138Buffer(Buffer, msg, 187);
+
                 uint16_t len = mavlink_msg_to_send_buffer(Buffer, &msg);
 
                 std::cout << "@MAV: ViconClientListens: " << ViconClientListens << std::endl;
@@ -424,7 +408,7 @@ int main( )
     #if (!TCP_CONNECT_DEBUG && !MAVLINK_DEBUG)
          } // end of for( unsigned int SegmentIndex = 0 ; SegmentIndex < SegmentCount ; ++SegmentIndex ) - loop
     #endif // (!TCP_CONNECT_DEBUG && !MAVLINK_DEBUG)
-  } //end of while( ViconClientListens ) - Loop
+  } // end of while( ViconClientListens ) - Loop
 
 #if (!TCP_CONNECT_DEBUG && !MAVLINK_DEBUG)
 
