@@ -32,6 +32,3 @@ Makefile*
 #QtCtreator Qml
 *.qmlproject.user
 *.qmlproject.user.*
-
-#Vicon specific things
-/vicon/client.h

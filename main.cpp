@@ -11,8 +11,8 @@
 #define TCP_CONNECT_DEBUG 0
         // everything concerning MavLink and the ViconDataStream will be ignored
 
-
-
+#define LOG_DATA 1
+        //doesn't work somehow ... whatever ...
 
 
 #include <QCoreApplication>
@@ -23,74 +23,18 @@
 #include <unistd.h>
 
 #include "functions.h"  // constants are declared here
-
 #include "vicon/client.h"
+#include "quaternions.h"
 
 #if (!VICON_STREAM_DEBUG && !TCP_CONNECT_DEBUG)
     #include "/home/gcs/programming/mavlink_lib/c_library-master/common/mavlink.h"
-#endif
+#endif // (!VICON_STREAM_DEBUG && !TCP_CONNECT_DEBUG)
+
+#if LOG_DATA
+    #include <fstream>
+#endif // LOG_DATA
 
 using namespace ViconDataStreamSDK::CPP;
-
-
-namespace
-{
-  std::string Adapt( const bool i_Value )
-  {
-    return i_Value ? "True" : "False";
-  }
-
-  std::string Adapt( const Direction::Enum i_Direction )
-  {
-    switch( i_Direction )
-    {
-      case Direction::Forward:
-        return "Forward";
-      case Direction::Backward:
-        return "Backward";
-      case Direction::Left:
-        return "Left";
-      case Direction::Right:
-        return "Right";
-      case Direction::Up:
-        return "Up";
-      case Direction::Down:
-        return "Down";
-      default:
-        return "Unknown";
-    }
-  }
-
-  std::string Adapt( const DeviceType::Enum i_DeviceType )
-  {
-    switch( i_DeviceType )
-    {
-      case DeviceType::ForcePlate:
-        return "ForcePlate";
-      case DeviceType::Unknown:
-      default:
-        return "Unknown";
-    }
-  }
-
-  std::string Adapt( const Unit::Enum i_Unit )
-  {
-    switch( i_Unit )
-    {
-      case Unit::Meter:
-        return "Meter";
-      case Unit::Volt:
-        return "Volt";
-      case Unit::NewtonMeter:
-        return "NewtonMeter";
-      case Unit::Newton:
-        return "Newton";
-      case Unit::Unknown:
-      default:
-        return "Unknown";
-    }
-  }
-}
 
 int main( )
 {
@@ -152,11 +96,8 @@ int main( )
                            Direction::Left,
                            Direction::Up ); // Z-up
 
-  // Discover the version number
-//  Output_GetVersion _Output_GetVersion = ViconClient.GetVersion();
-//  std::cout << "Version: " << _Output_GetVersion.Major << "."
-//                           << _Output_GetVersion.Minor << "."
-//                           << _Output_GetVersion.Point << std::endl;
+  int SubjectIndex = -1;
+  std::string SubjectName;
 
 #endif // (!TCP_CONNECT_DEBUG && !MAVLINK_DEBUG)
 
@@ -197,9 +138,6 @@ int main( )
   }
   else std::cout << "connection to TCP2Serial server successful" << std::endl;
 
-
-
-
   /***************************************/
   /* calculate Transformation Quaternion */
   /***************************************/
@@ -214,13 +152,20 @@ int main( )
 
 #endif // !VICON_STREAM_DEBUG
 
+#if LOG_DATA
+  std::ofstream logfile;
+  logfile.open(LOG_FILE_NAME);
 
+  if (!logfile.is_open()) {
+      perror("logfile could not open, Error: ");
+      return 1;
+  }
+  std::cout << "logfile opened: " << LOG_FILE_NAME << std::endl;
+  logfile << "timestamp(ms)|w_quat|x_quat|y_quat|z_quat|x_pos(NED in m)|y_pos(NED in m)|z_pos(NED in m)|SegmentIndex" << std::endl;
+#endif // LOG_DATA
 
   bool ViconClientListens = true;
   unsigned char mavlink_seq_no = 0x00;
-
-  int SubjectIndex = -1;
-  std::string SubjectName;
 
   unsigned long long int time_last_loop = 0;
   unsigned int loop_time_desired = 1000 / FREQUENCY; // desired looptime in miliseconds
@@ -273,11 +218,9 @@ int main( )
                 ++m;
          }
 
-         // Count the number of segments
-         unsigned int SegmentCount = ViconClient.GetSegmentCount( SubjectName ).SegmentCount;
-         std::cout << "    Segments (" << SegmentCount << "):" << std::endl;
-         for( unsigned int SegmentIndex = 0 ; SegmentIndex < SegmentCount ; ++SegmentIndex )
-         {
+
+         unsigned int SegmentIndex = 0;
+
                 std::cout << "      Segment #" << SegmentIndex << std::endl;
                 // Get the segment name
                 std::string SegmentName = ViconClient.GetSegmentName( SubjectName, SegmentIndex ).SegmentName;
@@ -300,9 +243,9 @@ int main( )
                 data_mavlinkMsgNo138[6] = _Output_GetSegmentGlobalRotationQuaternion.Rotation[ 3 ];
                 // Attention: order of variables is different then in mavlink! In Vicon it is: (x_quat,y_quat,z_quat,w_quat)
 
-                // if segment was not present at this frame then Occluded = false
+                // if segment was not present at this frame then Occluded = true
                 // w = 1 then, so the quaternion doesn't represent a rotation
-                if (!_Output_GetSegmentGlobalRotationQuaternion.Occluded)
+                if (_Output_GetSegmentGlobalRotationQuaternion.Occluded)
                     data_mavlinkMsgNo138[6] = 1;
 
                 #if VICON_STREAM_DEBUG
@@ -316,13 +259,10 @@ int main( )
                     std::cout << "           z: " << data_mavlinkMsgNo138[5] << std::endl;
                 #endif // VICON_DEBUG
 
-                // Get the unlabeled markers
-                unsigned int UnlabeledMarkerCount = ViconClient.GetUnlabeledMarkerCount().MarkerCount;
-                std::cout << "  Unlabeled Markers (" << UnlabeledMarkerCount << "):" << std::endl;
 
     #endif // (!TCP_CONNECT_DEBUG && !MAVLINK_DEBUG)
     #if MAVLINK_DEBUG
-                float data_mavlinkMsgNo138[7] = {500, 500, 500, 0, 0, 0, 1}; // some test data for MavLink, still in Vicon-coordinate order
+                float data_mavlinkMsgNo138[7] = {500, 500, 500, 0, 0.5, 0, 0.5}; // some test data for MavLink, still in Vicon-coordinate order
                 // (x, y, z, x_quat, y_quat, z_quat, w_quat)
     #endif // MAVLINK_DEBUG
 
@@ -341,6 +281,23 @@ int main( )
                 std::cout << "           x: " << data_mavlinkMsgNo138[1] << std::endl;
                 std::cout << "           y: " << data_mavlinkMsgNo138[2] << std::endl;
                 std::cout << "           z: " << data_mavlinkMsgNo138[3] << std::endl;
+
+        #if LOG_DATA
+                // logfile << "timestamp(us)|w_quat|x_quat|y_quat|z_quat|x_pos(NED in m)|y_pos(NED in m)|z_pos(NED in m)" << std::endl;
+                logfile << getMicroSecondoftheday() << "|" << data_mavlinkMsgNo138[0] << "|" << data_mavlinkMsgNo138[1]
+                           << "|" << data_mavlinkMsgNo138[2] << "|" << data_mavlinkMsgNo138[3]
+                           << "|" << data_mavlinkMsgNo138[4] << "|" << data_mavlinkMsgNo138[5]
+                           << "|" << data_mavlinkMsgNo138[6] << "|" << SegmentIndex << std::endl;
+        #endif // LOG_DATA
+
+                // if there is no valid Vicon Data, do not send it via MavLink
+                // instead continue with the next iteration and try to grab a new set of Vicon Data
+                if (_Output_GetSegmentGlobalRotationQuaternion.Occluded) {
+                        std::cout << "ViconData.Occluded = true, no data will be send via MavLink!" << std::endl;
+                        std::cout << ">> Next Iteration" << std::endl;
+                        continue;
+                }
+
 
                 mavlink_message_t msg; // defined in mavlink_types.h
 
@@ -405,12 +362,13 @@ int main( )
     #endif // !VICON_STREAM_DEBUG
 
                 ++mavlink_seq_no; //messagecounter +1
-    #if (!TCP_CONNECT_DEBUG && !MAVLINK_DEBUG)
-         } // end of for( unsigned int SegmentIndex = 0 ; SegmentIndex < SegmentCount ; ++SegmentIndex ) - loop
-    #endif // (!TCP_CONNECT_DEBUG && !MAVLINK_DEBUG)
   } // end of while( ViconClientListens ) - Loop
 
 #if (!TCP_CONNECT_DEBUG && !MAVLINK_DEBUG)
+
+ #if LOG_DATA
+  logfile.close();
+ #endif // LOG_DATA
 
   if( TransmitMulticast )
   {

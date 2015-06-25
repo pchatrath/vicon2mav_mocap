@@ -2,6 +2,8 @@
  * author: Julian L. Nicklas, julian.nicklas (at) posteo (.) de
  */
 
+#pragma once
+
 #include <sys/time.h>   // for gettimeofteday();
 #include <time.h>       // for nanoslepp(...);
 #include <math.h>
@@ -12,17 +14,18 @@
 //##################### constants ########################
 
 #define VICON_SERVER_ADDRESS "192.168.0.12:801"        // ip of the windows PC
-#define UAV_NAME "AR2_201"            // the subject name of this UAV, this application only listens for data for this subject name
+#define UAV_NAME "ARSENL_QUAD4"            // the subject name of this UAV, this application only listens for data for this subject name
 #define MY_NET_ADDRESS INADDR_ANY
 #define TCP2SERIAL_ADRESS "127.0.0.1"
 #define TCP2SERIAL_PORT 5763
 #define FREQUENCY 30 // maximum frequency of the main loop in Hz
                 // if the code is slower this frequency will not be archieved
+#define LOG_FILE_NAME "/home/gcs/vicon2mav_logs/v2m_log.txt"
 
 #define PI 3.14159265
-//#define ROOM_ALIGNMENT 0 // Angle between North- and x-axis of the Vicon coordinate system (positions send via MavLink should be in NED)
+#define ROOM_ALIGNMENT 0 // Angle between North- and x-axis of the Vicon coordinate system (positions send via MavLink should be in NED)
         // Angle is measured in radians positive around the z-up-Axis from Vicon x-axis to North-axis
-#define ROOM_ALIGNMENT 2.474 //room alignment of the Vicon Enviroment at the NPS
+//#define ROOM_ALIGNMENT 2.474 //room alignment of the Vicon Enviroment at the NPS
 
 
 //################# function declarations ###################

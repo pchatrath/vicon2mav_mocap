@@ -10,7 +10,9 @@
  *		https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
  */
 
- #include <math.h>
+#pragma once
+
+#include <math.h>
 
 void quat_from_axisrad(float *quat, float *radians);
 
