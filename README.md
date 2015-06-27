@@ -1,7 +1,7 @@
 # vicon2mav_mocap (v2m)
 
 ### What v2m does:
-It connects to the Vicon Datastream over a network, graps the relevant data, edits it according to the att\_pos\_mocap MavLink message and sends the message out to a TCP/IP sever.
+It connects to the Vicon Datastream over a network, grabs the relevant data, edits it according to the att\_pos\_mocap MavLink message and sends the message out to a TCP/IP sever.
 
 **TLDR**: Vicon Datastream in, att_pos_mocap MavLink message out.
 
@@ -22,7 +22,7 @@ It connects to the Vicon Datastream over a network, graps the relevant data, edi
 
 4. Make a connection between v2m and the PX4
 	* Hardware: I use a USB-Serial connector like [this](http://www.ftdichip.com/Support/Documents/DataSheets/Modules/DS_UMFT234XD.pdf) and use the Telem2 connector of the Pixhawk (for the wiring look [here](https://pixhawk.org/users/wiring#common_uart_pinout)).
-	* Software: I used ser2net to create a TCP server to which v2m can connect as a client. Install it with sudo apt-get install ser2net, open the configuration file with sudo gedit /etc/ser2net.conf, add the line 5763:raw:0:/dev/tty/USB0:921600 8DATABITS NONE 1STOPBIT RTSCTS -XONXOFF -LOCAL and run it. Once started ser2net will start everytime with system bootup. (you can probably also can use other software and other settings, this is just what I used)
+	* Software: I used ser2net to create a TCP server to which v2m can connect as a client. Install it with `sudo apt-get install ser2net`, open the configuration file with `sudo gedit /etc/ser2net.conf`, add the line `5763:raw:0:/dev/tty/USB0:921600 8DATABITS NONE 1STOPBIT RTSCTS -XONXOFF -LOCAL` (I also deleted all the others, because I don't need them. I would recommend checking what this line actually means, so you can accustomize it to your system) and run it. Once started ser2net will start everytime with system bootup. (you can probably also can use other software and other settings, this is just what I used)
 
 5. Initiate the Vicon Stream and you should be ready to go.
 
