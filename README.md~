@@ -1,0 +1,29 @@
+# vicon2mav_mocap (v2m)
+
+### What v2m does:
+It connects to the Vicon Datastream over a network, graps the relevant data, edits it according to the att\_pos\_mocap MavLink message and sends the message out to a TCP/IP sever.
+
+**TLDR**: Vicon Datastream in, att_pos_mocap MavLink message out.
+
+### How to use v2m, how to get it running:
+1. What libraries are needed:
+	* the ViconDataStreamSDK, espially the *client.h* and the *libViconDataStreamSDK_CPP.so*
+	* the MavLink library (found here : https://github.com/mavlink/mavlink)
+	* a TCP/IP server which can forward information unaltered to a serial port (I use [ser2net](http://sourceforge.net/projects/ser2net/))
+
+2. Before building and using:
+	* I included ...
+		* *client.h* [here](https://github.com/moskytoo/vicon2mav_mocap/blob/master/main.cpp#L26)
+		* *libViconDataStreamSDK_CPP.so* in the .pro file of my Qt project
+		* *mavlink.h* [here](https://github.com/moskytoo/vicon2mav_mocap/blob/master/main.cpp#L30)
+	* Setting the constants: Constants concerning your system are set in *functions.h*. In the *main.cpp* are four constants, which decide in which 'mode' v2m should run.
+	* 
+		 
+	
+
+I used the Qt creator to write the source code and build the application. As this was created as a Qt project, I would recommend doing the same.
+
+I know the source code is poorly documented, I will do this eventually when I've some time left.
+
+Julian L. Nicklas
+julian.nicklas (at) posteo (.) de
